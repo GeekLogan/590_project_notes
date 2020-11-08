@@ -25,18 +25,30 @@ def get_sample_detail( specimen='W1-1-2-A.1.01' ):
 
 def get_all_section_images( specimen='W1-1-2-A.1.01' ):
     data = get_sample_detail( specimen )
-    data = data['Response']['section-data-sets']['section-data-set']
     
     out = []
+    try:
+        data = data['Response']['section-data-sets']['section-data-set']
+    except:
+        return out
+    
+    if type(data) != list:
+        data = [data]
+    
     for a in data:
+        if not 'genes' in a:
+            continue
         if a['genes'] is not None:
-            out.append(
-                (
-                    a['genes']['gene']['acronym'],
-                    a['sub-images']['sub-image']['id']['#text'],
-                    a['sub-images']['sub-image']['section-number']['#text']
+            try:
+                out.append(
+                    (
+                        a['genes']['gene']['acronym'],
+                        a['sub-images']['sub-image']['id']['#text'],
+                        a['sub-images']['sub-image']['section-number']['#text']
+                    )
                 )
-            )
+            except:
+                pass
         else:
             for i,sub_image in enumerate( a['sub-images']['sub-image'] ):
                 try:
@@ -63,21 +75,6 @@ def download_image_from_id( id_str, name=None, feature_map=False ):
 def download_unpack( x ):
     download_image_from_id( x[0], name=x[1], feature_map=x[2] )
     return 0
-    
-'''for specimen in all_specimens:
-    print( "Starting specimen", specimen, "...")
-    images = get_all_section_images( specimen )
-    
-    for gene,image,slice_num in images:
-        print( '\tDownloading...', specimen, gene, image, slice_num)
-        name = './data_tmp/'
-        name += specimen + '.GENE_' + gene + '.SLICE_' + str(slice_num)
-        
-        download_image_from_id( image, name=name, feature_map=False )
-        
-        print( '\tDownloading map...', specimen, gene, image, slice_num)
-        name += '.MAP'
-        download_image_from_id( image, name=name, feature_map=True )'''
 
 for specimen in all_specimens:
     print( "Starting specimen", specimen, "...")
